@@ -1,0 +1,12 @@
+Assignment 6
+
+There are actually four tasks in this assignment:
+1) implementing B-device (defined in BDevice.idr);
+2) implementing user interface in bdev.idr for operating with one B-device;
+3) implementing several type classes instances for B-device;
+4) extending user interface in order to support operating with
+   several devices.
+
+Try to work in parallel over tasks 1) and 2): your program should run and do something real
+as soon as possible. You may treat tasks 3) and 4) as optional unless you feel curious for
+blood, sweat and tears all the way.
