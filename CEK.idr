@@ -5,6 +5,14 @@ data Expr = Const Int            --константы
                  |App Expr Expr         -- применение
                  |Lambda String Expr     -- абстракция
                  |Op Char (Vect n Expr) -- N-нарная операция
+
+implementation Show Expr where
+        show (Const a) = show a
+        show (Var s) = show s
+        show (App e1 e2) = "(" ++ (show e1) ++ (show e2) ++ ")"
+        show (Lambda x e) = "(L" ++ (show x) ++ "." ++ (show e) ++ ")"
+        show (Op c v) = (show c) ++ (show v)
+
 mutual
     data Environment = Env (List (String, Control))
 
@@ -48,22 +56,25 @@ step (cs, Opd arg f [] k) = case calc f arg cs of --cek6
 step (cs1, Opd val f (cs2 :: arg) k) = pure (cs2, Opd (cs1::val) f arg k) --cek5
 step _ = Nothing
 
--- это я просто проверяла руками работает ли step
-{-term : Expr
-term =  App (Lambda "x" (Var "x")) (Const 5)
+cek : StateCEK -> StateCEK
+cek s@(State c cs) = case step (c,cs) of
+                Nothing => s
+                Just (c1,cs1) => cek (State c1 cs1)
 
-state1 : (Control, Context)
-state1 = (CS term (Env []), Mt)
+term1 : Expr
+term1 =  App (Lambda "x" (Var "x")) (Const 5)
 
-state2 : (Control, Context)
-state2 = (CS (Lambda "x" (Var "x")) (Env []), Arg (CS (Const 5) (Env [])) Mt)
+term2 : Expr
+term2 =  App (App (Lambda "f" (Lambda "x" (App (Var "f")(Var "x"))))(Lambda "y" (Op '+' [Var "y", Var "y"]))) (Const 1)
 
-state3 : (Control, Context)
-state3 = (CS (Const 5) (Env []), Fun (CS (Lambda "x" (Var "x")) (Env [])) Mt)
+start : Expr -> StateCEK
+start term =  State (CS term (Env [])) Mt
 
-state4 : (Control, Context)
-state4 = (CS (Var "x") (Env [("x", CS (Const 5) (Env []))]),Mt)
+get_term : StateCEK -> Expr
+get_term (State (CS term _) _ )= term
 
-state5 : (Control, Context)
-state5 = (CS (Const 5) (Env []), Mt)
--}
+main : IO ()
+main = do
+    putStrLn "Test for CEK machine"
+    putStrLn ((show term1) ++ "  --->  " ++ (show $ get_term $ cek $ start term1))
+    putStrLn ((show term2) ++ "  --->  " ++ (show $ get_term $ cek $ start term2))
